@@ -17,6 +17,7 @@ This repo contains a Go package for version parsing,
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/ActiveState/langtools/pkg/version"
@@ -27,7 +28,32 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not parse 1.2 as a generic version: %s", err)
 	}
-	log.Printf("Parsed as %v", v.Decimal)
+	fmt.Printf("Parsed as %v\n", v.Decimal)
+	// Prints:
+	// Parsed as [1 2 0]
+}
+```
+
+## Name Normalization
+
+Some language ecosystems have a concept of name normalization for package
+names. This repo contains a Go package for name normalization,
+`github.com/ActiveState/langtools/pkg/name`:
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/ActiveState/langtools/pkg/name"
+)
+
+func main() {
+	norm := name.NormalizePython("backports.functools_lru_cache")
+	fmt.Printf("Normalized as %s\n", norm)
+	// Prints:
+	// Normalized as backports-functools-lru-cache
 }
 ```
 
