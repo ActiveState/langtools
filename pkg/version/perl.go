@@ -114,9 +114,7 @@ func removeLeadingZeros(s string) string {
 }
 
 func parsePerlVStringVersion(version string) (*Version, error) {
-	if strings.HasPrefix(version, "v") {
-		version = version[1:]
-	}
+	version = strings.TrimPrefix(version, "v")
 	version = strings.ReplaceAll(version, "_", "")
 	segments := strings.Split(version, ".")
 	for i, s := range segments {
