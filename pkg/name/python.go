@@ -1,3 +1,4 @@
+// Package name provides name normalization for package names
 package name
 
 import (
