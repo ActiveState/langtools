@@ -68,14 +68,17 @@ func TestParseGenericPreReleaseIdentifierSortsCorrectly(t *testing.T) {
 	beta11 := parseOrFatalGeneric(t, "1.0.0-beta.11")
 	rc := parseOrFatalGeneric(t, "1.0.0-rc.1")
 	stable := parseOrFatalGeneric(t, "1.0.0")
+	two0 := parseOrFatalGeneric(t, "2.0")
+	two00 := parseOrFatalGeneric(t, "2.0.0")
 
-	assert.True(t, Compare(alpha, alphaBeta) < 0)
-	assert.True(t, Compare(alphaBeta, alpha1) < 0)
-	assert.True(t, Compare(alpha1, beta) < 0)
-	assert.True(t, Compare(beta, beta2) < 0)
-	assert.True(t, Compare(beta2, beta11) < 0)
-	assert.True(t, Compare(beta11, rc) < 0)
-	assert.True(t, Compare(rc, stable) < 0)
+	assert.True(t, Compare(alpha, alphaBeta) < 0, "Compare(alpha, alphaBeta)")
+	assert.True(t, Compare(alphaBeta, alpha1) < 0, "Compare(alphaBeta, alpha1)")
+	assert.True(t, Compare(alpha1, beta) < 0, "Compare(alpha1, beta)")
+	assert.True(t, Compare(beta, beta2) < 0, "Compare(beta, beta2)")
+	assert.True(t, Compare(beta2, beta11) < 0, "Compare(beta2, beta11)")
+	assert.True(t, Compare(beta11, rc) < 0, "Compare(beta11, rc)")
+	assert.True(t, Compare(rc, stable) < 0, "Compare(rc, stable)")
+	assert.True(t, Compare(two0, two00) == 0, "Compare(two0, two00)")
 }
 
 func TestParseGenericParsesOpenSSLVersionsCorrectly(t *testing.T) {
@@ -261,6 +264,16 @@ func TestCompare(t *testing.T) {
 			v2:     parseOrFatalGeneric(t, "0.0.23"),
 			expect: LT,
 		},
+		"equal different length (first is longer)": {
+			v1:     parseOrFatalGeneric(t, "1.1.2.0"),
+			v2:     parseOrFatalGeneric(t, "1.1.2"),
+			expect: EQ,
+		},
+		"equal different length (second is longer)": {
+			v1:     parseOrFatalGeneric(t, "1.1.2"),
+			v2:     parseOrFatalGeneric(t, "1.1.2.0"),
+			expect: EQ,
+		},
 	}
 
 	for name, testCase := range testCases {
@@ -275,6 +288,26 @@ func TestCompare(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestClone(t *testing.T) {
+	v1 := parseOrFatalGeneric(t, "1.2")
+	v2 := v1.Clone()
+
+	assert.Equal(t, 0, Compare(v1, v2), "cloned version has same Decimal slice")
+	assert.Equal(t, v1.Original, v2.Original, "cloned version has same Original string")
+	assert.Equal(t, v1.ParsedAs, v2.ParsedAs, "cloned version has same ParsedAs value")
+
+	v1.Decimal[0] = decimal.New(0, 0)
+	assert.NotEqual(t, 0, Compare(v1, v2), "changing Decimal slice in original does not change clone")
+}
+
+func TestString(t *testing.T) {
+	v := parseOrFatalGeneric(t, "1.2")
+	assert.Equal(t, "1.2 (Generic)", v.String())
+
+	v = parseOrFatalSemVer(t, "1.2.3")
+	assert.Equal(t, "1.2.3 (SemVer)", v.String())
 }
 
 func parseOrFatalGeneric(t *testing.T, v string) *Version {
