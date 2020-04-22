@@ -1,4 +1,4 @@
-// Package version provides parsing of version strings, such as 1.2.3. The
+// Package version provides parsing of version strings, such as "1.2.3". The
 // package returns a struct that contains several pieces of information.
 //
 // The primary motivation for this package was to create a representation of
@@ -31,8 +31,11 @@
 // representation.
 package version
 
+//go:generate enumer -type ParsedAs .
+
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ericlagergren/decimal"
 )
@@ -103,11 +106,35 @@ func stringsToDecimals(strings []string) ([]*decimal.Big, error) {
 	return decimals, nil
 }
 
+var bigZero = decimal.New(0, 0)
+
 // Compare returns:
 //   <0 if the version in v1 is less than the version in v2
 //    0 if the version in v1 is equal to the version in v2
 //   >0 if the version in v1 is greater than the version in v2
+//
+// If the two versions have different numbers of segments, and both end in
+// zero ("1.0" and "1.0.0"), then they compare as equal. However, "1.1" >
+// "1.0.0" and "0.9" < "1.0.0".
 func Compare(v1, v2 *Version) int {
+	if len(v1.Decimal) > len(v2.Decimal) {
+		v2 = v2.Clone()
+		for i := len(v2.Decimal); i < len(v1.Decimal); i++ {
+			if v1.Decimal[i].Cmp(bigZero) != 0 {
+				break
+			}
+			v2.Decimal = append(v2.Decimal, decimal.New(0, 0))
+		}
+	} else if len(v1.Decimal) < len(v2.Decimal) {
+		v1 = v1.Clone()
+		for i := len(v1.Decimal); i < len(v2.Decimal); i++ {
+			if v2.Decimal[i].Cmp(bigZero) != 0 {
+				break
+			}
+			v1.Decimal = append(v1.Decimal, decimal.New(0, 0))
+		}
+	}
+
 	min := len(v1.Decimal)
 	if len(v2.Decimal) < min {
 		min = len(v2.Decimal)
@@ -120,4 +147,25 @@ func Compare(v1, v2 *Version) int {
 	}
 
 	return len(v1.Decimal) - len(v2.Decimal)
+}
+
+// Clone returns a new *Version that is a clone of the one passed as the
+// method receiver.
+func (v *Version) Clone() *Version {
+	d := make([]*decimal.Big, len(v.Decimal))
+	for i := range v.Decimal {
+		d[i] = decimal.New(0, 0)
+		d[i].Copy(v.Decimal[i])
+	}
+	return &Version{
+		Original: v.Original,
+		Decimal:  d,
+		ParsedAs: v.ParsedAs,
+	}
+}
+
+// String returns a string representation of the version. Note that this is
+// not the same as v.Original.
+func (v *Version) String() string {
+	return fmt.Sprintf("%s (%s)", v.Original, v.ParsedAs.String())
 }
