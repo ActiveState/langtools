@@ -1,0 +1,21 @@
+linters:
+  disable-all: true
+  enable:
+    - deadcode
+    - errcheck
+    - goimports
+    - golint
+    - govet
+    - misspell
+    - staticcheck
+    - structcheck
+    - whitespace
+  fast: false
+
+linters-settings:
+  govet:
+    check-shadowing: true
+
+issues:
+    max-issues-per-linter: 0
+    max-same-issues: 0
