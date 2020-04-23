@@ -1,0 +1,46 @@
+version: 2
+
+shared: &shared
+  steps:
+    - checkout
+    - run:
+        name: Run go tests
+        command: go test -race -v ./...
+
+jobs:
+  "go-1.13":
+    docker:
+      - image: circleci/golang:1.13
+    <<: *shared
+
+  "go-1.14":
+    docker:
+      - image: circleci/golang:1.14
+    <<: *shared
+
+  validate:
+    docker:
+      - image: circleci/golang:1.14
+    steps:
+      - checkout
+      - run:
+          name: Install golangci-lint
+          command: |
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+                sh -s -- -b /tmp/bin v1.25.0
+      - run:
+          command: |
+            go mod download
+      - run:
+          name: Run golangci-lint
+          command: |
+            export FAIL_ON_WARNINGS=1
+            /tmp/bin/golangci-lint run --verbose
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - "go-1.13"
+      - "go-1.14"
+      - validate
