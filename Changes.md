@@ -1,4 +1,4 @@
-## v0.0.3
+## v0.0.3  2020-04-23
 
 * Added `.String()` and `.Clone()` methods to the `Version` struct.
 
