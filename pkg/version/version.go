@@ -117,36 +117,47 @@ var bigZero = decimal.New(0, 0)
 // zero ("1.0" and "1.0.0"), then they compare as equal. However, "1.1" >
 // "1.0.0" and "0.9" < "1.0.0".
 func Compare(v1, v2 *Version) int {
-	if len(v1.Decimal) > len(v2.Decimal) {
-		v2 = v2.Clone()
-		for i := len(v2.Decimal); i < len(v1.Decimal); i++ {
-			if v1.Decimal[i].Cmp(bigZero) != 0 {
-				break
-			}
-			v2.Decimal = append(v2.Decimal, decimal.New(0, 0))
-		}
-	} else if len(v1.Decimal) < len(v2.Decimal) {
-		v1 = v1.Clone()
-		for i := len(v1.Decimal); i < len(v2.Decimal); i++ {
-			if v2.Decimal[i].Cmp(bigZero) != 0 {
-				break
-			}
-			v1.Decimal = append(v1.Decimal, decimal.New(0, 0))
-		}
-	}
+	min, max, longest := minMax(v1.Decimal, v2.Decimal)
 
-	min := len(v1.Decimal)
-	if len(v2.Decimal) < min {
-		min = len(v2.Decimal)
-	}
-
+	// find any difference between these versions where they have the same number of segments
 	for i := 0; i < min; i++ {
-		if v1.Decimal[i].Cmp(v2.Decimal[i]) != 0 {
-			return v1.Decimal[i].Cmp(v2.Decimal[i])
+		v1VersionSegment := v1.Decimal[i]
+		v2VersionSegment := v2.Decimal[i]
+
+		cmp := v1VersionSegment.Cmp(v2VersionSegment)
+		if cmp != 0 {
+			return v1VersionSegment.Cmp(v2VersionSegment)
 		}
 	}
 
+	// does the longest version have only zero-value segments remaining?
+	var onlyZeroes bool = true
+
+	for i := min; i < max; i++ {
+		if longest[i].Cmp(bigZero) != 0 {
+			onlyZeroes = false
+			break
+		}
+	}
+
+	if onlyZeroes {
+		return 0
+	}
+
+	// finally, highest number of segments wins
 	return len(v1.Decimal) - len(v2.Decimal)
+}
+
+// helper function to find the lengths of and longest version segment array
+func minMax(v1 []*decimal.Big, v2 []*decimal.Big) (int, int, []*decimal.Big) {
+	l1 := len(v1)
+	l2 := len(v2)
+
+	if l1 < l2 {
+		return l1, l2, v2
+	} else {
+		return l2, l1, v1
+	}
 }
 
 // Clone returns a new *Version that is a clone of the one passed as the
