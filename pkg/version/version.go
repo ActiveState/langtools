@@ -113,40 +113,39 @@ var bigZero = decimal.New(0, 0)
 //    0 if the version in v1 is equal to the version in v2
 //   >0 if the version in v1 is greater than the version in v2
 //
-// If the two versions have different numbers of segments, and both end in
-// zero ("1.0" and "1.0.0"), then they compare as equal. However, "1.1" >
-// "1.0.0" and "0.9" < "1.0.0".
+// Versions that differ only by trailing zeros (e.g. "1.2" and "1.2.0") are
+// equal.
 func Compare(v1, v2 *Version) int {
-	if len(v1.Decimal) > len(v2.Decimal) {
-		v2 = v2.Clone()
-		for i := len(v2.Decimal); i < len(v1.Decimal); i++ {
-			if v1.Decimal[i].Cmp(bigZero) != 0 {
-				break
-			}
-			v2.Decimal = append(v2.Decimal, decimal.New(0, 0))
-		}
-	} else if len(v1.Decimal) < len(v2.Decimal) {
-		v1 = v1.Clone()
-		for i := len(v1.Decimal); i < len(v2.Decimal); i++ {
-			if v2.Decimal[i].Cmp(bigZero) != 0 {
-				break
-			}
-			v1.Decimal = append(v1.Decimal, decimal.New(0, 0))
-		}
-	}
+	min, max, longest, flip := minMax(v1.Decimal, v2.Decimal)
 
-	min := len(v1.Decimal)
-	if len(v2.Decimal) < min {
-		min = len(v2.Decimal)
-	}
-
+	// find any difference between these versions where they have the same number of segments
 	for i := 0; i < min; i++ {
-		if v1.Decimal[i].Cmp(v2.Decimal[i]) != 0 {
-			return v1.Decimal[i].Cmp(v2.Decimal[i])
+		cmp := v1.Decimal[i].Cmp(v2.Decimal[i])
+		if cmp != 0 {
+			return cmp
 		}
 	}
 
-	return len(v1.Decimal) - len(v2.Decimal)
+	// compare remaining segments to zero
+	for i := min; i < max; i++ {
+		cmp := longest[i].Cmp(bigZero)
+		if cmp != 0 {
+			return cmp * flip
+		}
+	}
+
+	return 0
+}
+
+// helper function to find the lengths of and longest version segment array
+func minMax(v1 []*decimal.Big, v2 []*decimal.Big) (int, int, []*decimal.Big, int) {
+	l1 := len(v1)
+	l2 := len(v2)
+
+	if l1 < l2 {
+		return l1, l2, v2, -1
+	}
+	return l2, l1, v1, 1
 }
 
 // Clone returns a new *Version that is a clone of the one passed as the

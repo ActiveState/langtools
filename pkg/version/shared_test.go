@@ -60,8 +60,8 @@ func TestParseGeneric(t *testing.T) {
 }
 
 func TestParseGenericPreReleaseIdentifierSortsCorrectly(t *testing.T) {
-	alpha := parseOrFatalGeneric(t, "1.0.0-alpha")
 	alphaBeta := parseOrFatalGeneric(t, "1.0.0-alpha.beta")
+	alpha := parseOrFatalGeneric(t, "1.0.0-alpha")
 	alpha1 := parseOrFatalGeneric(t, "1.0.0-alpha.1")
 	beta := parseOrFatalGeneric(t, "1.0.0-beta")
 	beta2 := parseOrFatalGeneric(t, "1.0.0-beta.2")
@@ -71,8 +71,8 @@ func TestParseGenericPreReleaseIdentifierSortsCorrectly(t *testing.T) {
 	two0 := parseOrFatalGeneric(t, "2.0")
 	two00 := parseOrFatalGeneric(t, "2.0.0")
 
-	assert.True(t, Compare(alpha, alphaBeta) < 0, "Compare(alpha, alphaBeta)")
-	assert.True(t, Compare(alphaBeta, alpha1) < 0, "Compare(alphaBeta, alpha1)")
+	assert.True(t, Compare(alphaBeta, alpha) < 0, "Compare(alphaBeta, alpha)")
+	assert.True(t, Compare(alpha, alpha1) < 0, "Compare(alpha, alpha1)")
 	assert.True(t, Compare(alpha1, beta) < 0, "Compare(alpha1, beta)")
 	assert.True(t, Compare(beta, beta2) < 0, "Compare(beta, beta2)")
 	assert.True(t, Compare(beta2, beta11) < 0, "Compare(beta2, beta11)")
