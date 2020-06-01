@@ -135,130 +135,133 @@ func TestParsePython(t *testing.T) {
 	}
 }
 
+// Many of these tests are from
+// https://github.com/pypa/packaging/blob/19.2/tests/test_version.py
+//
+// They can be verified via https://pypi.org/project/packaging/19.2/
+// as follows:
+//
+// $ python3
+// >>> from packaging import version
+// >>> version.parse("some version") < version.parse("another version")
+var pythonTestStrings = []string{
+	// Legacy version tests, implicit epoch of -1
+	"  hmm",
+	"a cat is fine too",
+	"a",
+	"b",
+	"foobar",
+	"lolwut",
+	"0000000011g",
+	"1.13++",
+	"000000011g",
+	"2.0b1pl0",
+	"2e6",
+	"2g6",
+	"2.6.0-0.1pre6",
+	"2.6.0-0.1-pre7",
+	"2.6.0-0.1",
+	"2.6.0-0.2",
+	"2.6.0-0.92",
+	"2.7.0-0.92",
+	"2.16.0-0.92",
+	"3.2pl0",
+	"3.4j",
+	"5.5.kw",
+	"11g",
+	"012g",
+
+	// Implicit epoch of 0
+	"1.0.dev0",
+	"1.0.dev456",
+	"1.0a0",
+	"1.0a1",
+	"1.0a2.dev456",
+	"1.0a12.dev456",
+	"1.0a12",
+	"1.0b1.dev456",
+	"1.0b2",
+	"1.0b2.post345.dev456",
+	"1.0b2.post345",
+	"1.0b2-346",
+	"1.0rc1.dev456",
+	"1.0rc1",
+	"1.0rc2",
+	"1.0c3",
+	"1.0",
+	"1.0+abc.5",
+	"1.0+abc.7",
+	"1.0+5",
+	"1.0.post456.dev34",
+	"1.0.post456",
+	"1.0.1.2.3.4.5.6.7.8.9.1.2.3.4",
+	"1.1.dev1",
+	"1.2",
+	"1.2+123abc",
+	"1.2+123abc456",
+	"1.2+abc",
+	"1.2+abc123",
+	"1.2+abc123def",
+	"1.2+abcd",
+	"1.2+def",
+	"1.2+1",
+	"1.2+05",
+	"1.2+12",
+	"1.2+25",
+	"1.2+123",
+	"1.2+123.abc",
+	"1.2+123-def",
+	"1.2+123_gg",
+	"1.2+0124",
+	"1.2+1234.abc",
+	"1.2+123456",
+	"1.2.r32+123456",
+	"1.2.rev33+123456",
+
+	// Explicit epoch of 1
+	"1!1.0.dev456",
+	"1!1.0a1",
+	"1!1.0a2.dev456",
+	"1!1.0a12.dev456",
+	"1!1.0a12",
+	"1!1.0b1.dev456",
+	"1!1.0b2",
+	"1!1.0b2.post345.dev456",
+	"1!1.0b2.post345",
+	"1!1.0b2-346",
+	"1!1.0c1.dev456",
+	"1!1.0c1",
+	"1!1.0rc2",
+	"1!1.0c3",
+	"1!1.0",
+	"1!1.0.post456.dev34",
+	"1!1.0.post456",
+	"1!1.1.dev1",
+	"1!1.2+123abc",
+	"1!1.2+123abc456",
+	"1!1.2+abc",
+	"1!1.2+abc123",
+	"1!1.2+abc123def",
+	"1!1.2+1234.abc",
+	"1!1.2+123456",
+	"1!1.2.r32+123456",
+	"1!1.2.rev33+123456",
+}
+
 func TestParsePythonOrdering(t *testing.T) {
-	// Many of these tests are from
-	// https://github.com/pypa/packaging/blob/19.2/tests/test_version.py
-	//
-	// They can be verified via https://pypi.org/project/packaging/19.2/
-	// as follows:
-	//
-	// $ python3
-	// >>> from packaging import version
-	// >>> version.parse("some version") < version.parse("another version")
-	versions := []string{
-		// Legacy version tests, implicit epoch of -1
-		"  hmm",
-		"a cat is fine too",
-		"a",
-		"b",
-		"foobar",
-		"lolwut",
-		"0000000011g",
-		"1.13++",
-		"000000011g",
-		"2.0b1pl0",
-		"2e6",
-		"2g6",
-		"2.6.0-0.1pre6",
-		"2.6.0-0.1-pre7",
-		"2.6.0-0.1",
-		"2.6.0-0.2",
-		"2.6.0-0.92",
-		"2.7.0-0.92",
-		"2.16.0-0.92",
-		"3.2pl0",
-		"3.4j",
-		"5.5.kw",
-		"11g",
-		"012g",
-
-		// Implicit epoch of 0
-		"1.0.dev0",
-		"1.0.dev456",
-		"1.0a0",
-		"1.0a1",
-		"1.0a2.dev456",
-		"1.0a12.dev456",
-		"1.0a12",
-		"1.0b1.dev456",
-		"1.0b2",
-		"1.0b2.post345.dev456",
-		"1.0b2.post345",
-		"1.0b2-346",
-		"1.0rc1.dev456",
-		"1.0rc1",
-		"1.0rc2",
-		"1.0c3",
-		"1.0",
-		"1.0+abc.5",
-		"1.0+abc.7",
-		"1.0+5",
-		"1.0.post456.dev34",
-		"1.0.post456",
-		"1.0.1.2.3.4.5.6.7.8.9.1.2.3.4",
-		"1.1.dev1",
-		"1.2",
-		"1.2+123abc",
-		"1.2+123abc456",
-		"1.2+abc",
-		"1.2+abc123",
-		"1.2+abc123def",
-		"1.2+abcd",
-		"1.2+def",
-		"1.2+1",
-		"1.2+05",
-		"1.2+12",
-		"1.2+25",
-		"1.2+123",
-		"1.2+123.abc",
-		"1.2+123-def",
-		"1.2+123_gg",
-		"1.2+0124",
-		"1.2+1234.abc",
-		"1.2+123456",
-		"1.2.r32+123456",
-		"1.2.rev33+123456",
-
-		// Explicit epoch of 1
-		"1!1.0.dev456",
-		"1!1.0a1",
-		"1!1.0a2.dev456",
-		"1!1.0a12.dev456",
-		"1!1.0a12",
-		"1!1.0b1.dev456",
-		"1!1.0b2",
-		"1!1.0b2.post345.dev456",
-		"1!1.0b2.post345",
-		"1!1.0b2-346",
-		"1!1.0c1.dev456",
-		"1!1.0c1",
-		"1!1.0rc2",
-		"1!1.0c3",
-		"1!1.0",
-		"1!1.0.post456.dev34",
-		"1!1.0.post456",
-		"1!1.1.dev1",
-		"1!1.2+123abc",
-		"1!1.2+123abc456",
-		"1!1.2+abc",
-		"1!1.2+abc123",
-		"1!1.2+abc123def",
-		"1!1.2+1234.abc",
-		"1!1.2+123456",
-		"1!1.2.r32+123456",
-		"1!1.2.rev33+123456",
-	}
-
-	for i := 0; i < len(versions)-2; i++ {
-		v1 := parsePythonOrFatal(t, versions[i])
-		v2 := parsePythonOrFatal(t, versions[i+1])
-		assert.True(t, Compare(v1, v2) < 0, fmt.Sprintf("%s < %s", versions[i], versions[i+1]))
+	for i := 0; i < len(pythonTestStrings)-1; i++ {
+		v1 := parsePythonOrFatal(t, pythonTestStrings[i])
+		v2 := parsePythonOrFatal(t, pythonTestStrings[i+1])
+		assert.True(
+			t,
+			Compare(v1, v2) < 0,
+			fmt.Sprintf("%s < %s", pythonTestStrings[i], pythonTestStrings[i+1]),
+		)
 	}
 }
 
 func parsePythonOrFatal(t *testing.T, v string) *Version {
 	ver, err := ParsePython(v)
 	assert.NoError(t, err, "no error parsing %s as a python version", v)
-
 	return ver
 }
