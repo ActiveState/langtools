@@ -135,6 +135,20 @@ func TestParsePython(t *testing.T) {
 	}
 }
 
+func TestParsePythonOrderingEqual(t *testing.T) {
+	versions := []string{
+		"1",
+		"1.0",
+		"1.0.0",
+		"1.0.0.0",
+	}
+	for i := 0; i < len(versions)-1; i++ {
+		v1 := parsePythonOrFatal(t, versions[i])
+		v2 := parsePythonOrFatal(t, versions[i+1])
+		assert.True(t, Compare(v1, v2) == 0, fmt.Sprintf("%s == %s", versions[i], versions[i+1]))
+	}
+}
+
 // Many of these tests are from
 // https://github.com/pypa/packaging/blob/19.2/tests/test_version.py
 //
