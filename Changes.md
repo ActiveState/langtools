@@ -1,3 +1,9 @@
+## v0.0.4  2020-12-14
+
+* Added support for parsing Ruby package versions, based on the [rubygems
+  tests](https://github.com/rubygems/rubygems/blob/master/test/rubygems/test_gem_version.rb).
+
+
 ## v0.0.3  2020-04-23
 
 * Added `.String()` and `.Clone()` methods to the `Version` struct.
