@@ -59,6 +59,8 @@ const (
 	PythonLegacy
 	// PythonPEP440 is for versions as described in PEP440.
 	PythonPEP440
+	// Ruby is for Ruby versions.
+	Ruby
 )
 
 // Version is the struct returned from all parsing funcs.

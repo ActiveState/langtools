@@ -206,7 +206,7 @@ func toDecimalString(s string) string {
 		}
 
 		// Pad to 10 digits using zeros because Unicode characters are 32-bit
-		// integers and a 32-bit interger is a maximum of 10 digits long.
+		// integers and a 32-bit integer is a maximum of 10 digits long.
 		decimal += fmt.Sprintf("%010d", r)
 		runeIndex++
 	}
