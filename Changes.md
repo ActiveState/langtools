@@ -1,12 +1,19 @@
+## v0.0.7 2021-05-11
+
+* Add support for parsing PHP versions.
+
+
 ## v0.0.6 2021-05-11
 
 * Fix bug in remove trailing zeros change when the version is all zeros.
+
 
 ## v0.0.5 2021-05-10
 
 * Remove trailing zeros from parsed package versions because version comparison
   func `version.Compare` does not need trailing zeros to compare versions
   correctly.
+
 
 ## v0.0.4  2020-12-14
 

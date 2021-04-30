@@ -7,9 +7,9 @@ import (
 	"fmt"
 )
 
-const _ParsedAsName = "UnknownGenericSemVerPerlDecimalPerlVStringPythonLegacyPythonPEP440Ruby"
+const _ParsedAsName = "UnknownGenericSemVerPerlDecimalPerlVStringPHPPythonLegacyPythonPEP440Ruby"
 
-var _ParsedAsIndex = [...]uint8{0, 7, 14, 20, 31, 42, 54, 66, 70}
+var _ParsedAsIndex = [...]uint8{0, 7, 14, 20, 31, 42, 45, 57, 69, 73}
 
 func (i ParsedAs) String() string {
 	if i < 0 || i >= ParsedAs(len(_ParsedAsIndex)-1) {
@@ -18,7 +18,7 @@ func (i ParsedAs) String() string {
 	return _ParsedAsName[_ParsedAsIndex[i]:_ParsedAsIndex[i+1]]
 }
 
-var _ParsedAsValues = []ParsedAs{0, 1, 2, 3, 4, 5, 6, 7}
+var _ParsedAsValues = []ParsedAs{0, 1, 2, 3, 4, 5, 6, 7, 8}
 
 var _ParsedAsNameToValueMap = map[string]ParsedAs{
 	_ParsedAsName[0:7]:   0,
@@ -26,9 +26,10 @@ var _ParsedAsNameToValueMap = map[string]ParsedAs{
 	_ParsedAsName[14:20]: 2,
 	_ParsedAsName[20:31]: 3,
 	_ParsedAsName[31:42]: 4,
-	_ParsedAsName[42:54]: 5,
-	_ParsedAsName[54:66]: 6,
-	_ParsedAsName[66:70]: 7,
+	_ParsedAsName[42:45]: 5,
+	_ParsedAsName[45:57]: 6,
+	_ParsedAsName[57:69]: 7,
+	_ParsedAsName[69:73]: 8,
 }
 
 // ParsedAsString retrieves an enum value from the enum constants string name.
