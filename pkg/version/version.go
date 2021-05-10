@@ -84,6 +84,7 @@ func fromStringSlice(pa ParsedAs, original string, strings []string) (*Version, 
 		return nil, err
 	}
 
+	decimals = trimTrailingZeros(decimals)
 	return &Version{
 		Original: original,
 		Decimal:  decimals,
@@ -106,6 +107,14 @@ func stringsToDecimals(strings []string) ([]*decimal.Big, error) {
 	}
 
 	return decimals, nil
+}
+
+func trimTrailingZeros(decimals []*decimal.Big) []*decimal.Big {
+	indexOfLastZero := len(decimals)
+	for indexOfLastZero > 0 && decimals[indexOfLastZero-1].Cmp(bigZero) == 0 {
+		indexOfLastZero--
+	}
+	return decimals[0:indexOfLastZero]
 }
 
 var bigZero = decimal.New(0, 0)

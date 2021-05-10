@@ -30,7 +30,7 @@ func main() {
 	}
 	fmt.Printf("Parsed as %v\n", v.Decimal)
 	// Prints:
-	// Parsed as [1 2 0]
+	// Parsed as [1 2]
 }
 ```
 

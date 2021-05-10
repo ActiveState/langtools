@@ -1,3 +1,9 @@
+## v0.0.5 2021-05-10
+
+* Remove trailing zeros from parsed package versions because version comparison
+  func `version.Compare` does not need trailing zeros to compare versions
+  correctly.
+
 ## v0.0.4  2020-12-14
 
 * Added support for parsing Ruby package versions, based on the [rubygems
