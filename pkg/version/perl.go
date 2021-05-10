@@ -7,10 +7,6 @@ import (
 )
 
 const (
-	// Ensures that all produced sortable versions have a minimum of 3
-	// segments, i.e. ["1", "2", "3"]
-	minimumPerlVersionSegmentCount = 3
-
 	// These regular expression patterns are based off the lax regular
 	// expressions in version/regex.pm
 	// (https://metacpan.org/source/JPEACOCK/version-0.9924/lib/version/regex.pm).
@@ -65,13 +61,11 @@ func ParsePerl(version string) (*Version, error) {
 func parsePerlDecimalVersion(version string) (*Version, error) {
 	version = strings.ReplaceAll(version, "_", "")
 	parts := strings.Split(version, ".")
-	segments := make([]string, 0, minimumPerlVersionSegmentCount)
+	segments := make([]string, 0, len(parts))
 	segments = append(segments, decimalIntegerPartToSegment(parts[0]))
 	if len(parts) == 2 {
 		segments = append(segments, decimalFractionAndAlphaPartToSegments(parts[1])...)
 	}
-	segments = expandToMinimumSegmentCount(segments)
-
 	return fromStringSlice(PerlDecimal, version, segments)
 }
 
@@ -122,14 +116,5 @@ func parsePerlVStringVersion(version string) (*Version, error) {
 			segments[i] = "0"
 		}
 	}
-	segments = expandToMinimumSegmentCount(segments)
-
 	return fromStringSlice(PerlVString, version, segments)
-}
-
-func expandToMinimumSegmentCount(segments []string) []string {
-	for i := len(segments); i < minimumPerlVersionSegmentCount; i++ {
-		segments = append(segments, "0")
-	}
-	return segments
 }

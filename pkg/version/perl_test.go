@@ -17,22 +17,22 @@ func TestParsePerl(t *testing.T) {
 				version: "1a",
 			},
 			"Decimal 1": {
-				version: "1", expected: []string{"1", "0", "0"},
+				version: "1", expected: []string{"1"},
 			},
 			"Decimal 1.": {
-				version: "1.", expected: []string{"1", "0", "0"},
+				version: "1.", expected: []string{"1"},
 			},
 			"Decimal .2": {
-				version: ".2", expected: []string{"0", "200", "0"},
+				version: ".2", expected: []string{"0", "200"},
 			},
 			"Decimal 1.2": {
-				version: "1.2", expected: []string{"1", "200", "0"},
+				version: "1.2", expected: []string{"1", "200"},
 			},
 			"Decimal 1.02": {
-				version: "1.02", expected: []string{"1", "20", "0"},
+				version: "1.02", expected: []string{"1", "20"},
 			},
 			"Decimal 1.002": {
-				version: "1.002", expected: []string{"1", "2", "0"},
+				version: "1.002", expected: []string{"1", "2"},
 			},
 			"Decimal 1.0023": {
 				version: "1.0023", expected: []string{"1", "2", "300"},
@@ -47,7 +47,7 @@ func TestParsePerl(t *testing.T) {
 				version: "1.00200304", expected: []string{"1", "2", "3", "40"},
 			},
 			"Decimal 1.00200": {
-				version: "1.00200", expected: []string{"1", "2", "0"},
+				version: "1.00200", expected: []string{"1", "2"},
 			},
 			"Decimal Alpha Part Only Is Invalid": {
 				version: "_123",
@@ -59,13 +59,13 @@ func TestParsePerl(t *testing.T) {
 				version: "1._234",
 			},
 			"Decimal 1.0_2": {
-				version: "1.0_2", expected: []string{"1", "20", "0"},
+				version: "1.0_2", expected: []string{"1", "20"},
 			},
 			"Decimal 82.2_4568": {
 				version: "82.2_4568", expected: []string{"82", "245", "680"},
 			},
 			"Decimal 01.02": {
-				version: "01.02", expected: []string{"1", "20", "0"},
+				version: "01.02", expected: []string{"1", "20"},
 			},
 		},
 		PerlVString: {
@@ -73,10 +73,10 @@ func TestParsePerl(t *testing.T) {
 				version: "v",
 			},
 			"Dotted Decimal v1": {
-				version: "v1", expected: []string{"1", "0", "0"},
+				version: "v1", expected: []string{"1"},
 			},
 			"Dotted Decimal v1.": {
-				version: "v1.", expected: []string{"1", "0", "0"},
+				version: "v1.", expected: []string{"1"},
 			},
 			"Dotted Decimal .1.2": {
 				version: ".1.2", expected: []string{"0", "1", "2"},
@@ -85,10 +85,10 @@ func TestParsePerl(t *testing.T) {
 				version: "v.1.2",
 			},
 			"Dotted Decimal v1.2": {
-				version: "v1.2", expected: []string{"1", "2", "0"},
+				version: "v1.2", expected: []string{"1", "2"},
 			},
 			"Dotted Decimal v1.2345": {
-				version: "v1.2345", expected: []string{"1", "2345", "0"},
+				version: "v1.2345", expected: []string{"1", "2345"},
 			},
 			"Dotted Decimal v1.2.3": {
 				version: "v1.2.3", expected: []string{"1", "2", "3"},
@@ -106,10 +106,10 @@ func TestParsePerl(t *testing.T) {
 				version: "v1._234",
 			},
 			"Dotted Decimal v1.0_2": {
-				version: "v1.0_2", expected: []string{"1", "2", "0"},
+				version: "v1.0_2", expected: []string{"1", "2"},
 			},
 			"Dotted Decimal v1.02": {
-				version: "v1.02", expected: []string{"1", "2", "0"},
+				version: "v1.02", expected: []string{"1", "2"},
 			},
 		},
 	}
