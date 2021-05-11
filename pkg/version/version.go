@@ -111,9 +111,13 @@ func stringsToDecimals(strings []string) ([]*decimal.Big, error) {
 
 func trimTrailingZeros(decimals []*decimal.Big) []*decimal.Big {
 	indexOfLastZero := len(decimals)
-	for indexOfLastZero > 0 && decimals[indexOfLastZero-1].Cmp(bigZero) == 0 {
-		indexOfLastZero--
+	for i := len(decimals) - 1; i > 0; i-- {
+		if decimals[i].Cmp(bigZero) != 0 {
+			break
+		}
+		indexOfLastZero = i
 	}
+
 	return decimals[0:indexOfLastZero]
 }
 
