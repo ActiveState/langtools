@@ -68,6 +68,16 @@ for details on this tool.
 
 [![CircleCI](https://circleci.com/gh/ActiveState/langtools.svg?style=svg)](https://circleci.com/gh/ActiveState/langtools)
 
+## To Create a New Release
+* Tag master: `git tag v0.0.6`
+* Push the tag: `git push origin v0.0.6`
+* Go to the [releases page](https://github.com/ActiveState/langtools/releases)
+* Click on the name of the new release, `v0.0.6` in this example
+* Click the `Edit Release` button on the top right
+* Enter in the release notes, which are the same as you added to `Changes.md`
+  * Remove any manual line breaks as they don't look good
+* Click the `Publish Release` button on the bottom
+
 ## Authors
 
 This library was created by:

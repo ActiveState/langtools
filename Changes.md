@@ -1,3 +1,7 @@
+## v0.0.6 2021-05-11
+
+* Fix bug in remove trailing zeros change when the version is all zeros.
+
 ## v0.0.5 2021-05-10
 
 * Remove trailing zeros from parsed package versions because version comparison

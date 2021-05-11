@@ -1,6 +1,7 @@
 package version
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ericlagergren/decimal"
@@ -14,6 +15,7 @@ func TestParseGeneric(t *testing.T) {
 		version  string
 		expected []string
 	}{
+		{"Numbers", "0", []string{"0"}},
 		{"Numbers", "1", []string{"1"}},
 		{"Numbers", "1.0", []string{"1"}},
 		{"Numbers", "0.92", []string{"0", "92"}},
@@ -309,6 +311,32 @@ func TestString(t *testing.T) {
 	assert.Equal(t, "1.2.3 (SemVer)", v.String())
 }
 
+func TestTrimTrailingZeros(t *testing.T) {
+	tests := []struct {
+		input, expected []string
+	}{
+		{[]string{"0"}, []string{"0"}},
+		{[]string{"1"}, []string{"1"}},
+		{[]string{"0", "0"}, []string{"0"}},
+		{[]string{"0", "1"}, []string{"0", "1"}},
+		{[]string{"1", "0"}, []string{"1"}},
+		{[]string{"1", "1"}, []string{"1", "1"}},
+		{[]string{"0", "0", "0"}, []string{"0"}},
+		{[]string{"1", "0", "0"}, []string{"1"}},
+		{[]string{"1", "0", "1"}, []string{"1", "0", "1"}},
+		{[]string{"1", "1", "1"}, []string{"1", "1", "1"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(fmt.Sprint(tt.input), func(t *testing.T) {
+			input := mustStringsToDecimal(t, tt.input)
+			actual := trimTrailingZeros(input)
+			expected := mustStringsToDecimal(t, tt.expected)
+			assert.Equal(t, expected, actual, "expected %v got %v", expected, actual)
+		})
+	}
+}
+
 func parseOrFatalGeneric(t *testing.T, v string) *Version {
 	ver, err := ParseGeneric(v)
 	assert.NoError(t, err, "no error parsing %s as a generic version", v)
@@ -321,4 +349,11 @@ func parseOrFatalSemVer(t *testing.T, v string) *Version {
 	assert.NoError(t, err, "no error parsing %s as a semver version", v)
 
 	return ver
+}
+
+func mustStringsToDecimal(t *testing.T, s []string) []*decimal.Big {
+	d, err := stringsToDecimals(s)
+	assert.NoError(t, err, "no error parsing strings to decimals")
+
+	return d
 }
