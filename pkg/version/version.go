@@ -55,6 +55,8 @@ const (
 	// PerlVString is for Perl v-strings like "v1.1.2" (but these don't
 	// require the leading "v", so "1.2.3" is also valid).
 	PerlVString
+	// PHP is for PHP versions as used by composer.
+	PHP
 	// PythonLegacy is for Python versions before PEP440 was adopted.
 	PythonLegacy
 	// PythonPEP440 is for versions as described in PEP440.
