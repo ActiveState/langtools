@@ -10,7 +10,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-const appVersion = "0.0.1"
+const appVersion = "0.0.7"
 
 func main() {
 	pv, err := new()
@@ -42,8 +42,12 @@ func main() {
 			parsed, err = version.ParseSemVer(ver)
 		case "perl":
 			parsed, err = version.ParsePerl(ver)
+		case "php":
+			parsed, err = version.ParsePHP(ver)
 		case "python":
 			parsed, err = version.ParsePython(ver)
+		case "ruby":
+			parsed, err = version.ParseRuby(ver)
 		default:
 			pv.app.FatalUsage("Unknown version type requested: %s\n", typ)
 		}
