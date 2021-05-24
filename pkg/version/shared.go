@@ -28,7 +28,7 @@ var (
 	notZero                   = regexp.MustCompile(`[^0]`)
 
 	// Matches semver 2.0
-	semVerRegEx = regexp.MustCompile(`^(?P<Major>\d+)\.(?P<Minor>\d+)\.(?P<Patch>\d+)(?P<PreReleaseIDs>-[0-9A-Za-z-.]+)?(?P<BuildMetadata>\+[0-9A-Za-z-.]+)?$`)
+	semVerRegEx = regexp.MustCompile(`^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`)
 
 	genericPreReleaseIdentifiers = map[string]string{
 		"alpha":   "-26",

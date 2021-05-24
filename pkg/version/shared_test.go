@@ -112,6 +112,14 @@ func TestParseSemVer(t *testing.T) {
 			version:  "1.0",
 			expected: []string{},
 		},
+		"Number cannot have leading zero": {
+			version:  "01.2.3",
+			expected: []string{},
+		},
+		"Another invalid input": {
+			version:  "0.0.0-.",
+			expected: []string{},
+		},
 		"Parses Major.Minor.Patch": {
 			version:  "1.2.3",
 			expected: []string{"1", "2", "3", maxValue},
