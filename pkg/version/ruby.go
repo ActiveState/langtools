@@ -94,21 +94,3 @@ func dropTrailingZeroes(segments []string) []string {
 	}
 	return segments[0 : lastNonzeroIndex+1]
 }
-
-func asciiToDecimalString(s string) string {
-	decimal := ""
-	for i, r := range s {
-		if i == 0 {
-			decimal = fmt.Sprintf("%d", r)
-			continue
-		}
-
-		if i == 1 {
-			decimal += "."
-		}
-
-		// Pad to 3 digits because ASCII characters are at most 3 digits
-		decimal += fmt.Sprintf("%03d", r)
-	}
-	return decimal
-}
