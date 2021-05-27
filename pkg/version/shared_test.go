@@ -112,25 +112,33 @@ func TestParseSemVer(t *testing.T) {
 			version:  "1.0",
 			expected: []string{},
 		},
+		"Number cannot have leading zero": {
+			version:  "01.2.3",
+			expected: []string{},
+		},
+		"Another invalid input": {
+			version:  "0.0.0-.",
+			expected: []string{},
+		},
 		"Parses Major.Minor.Patch": {
 			version:  "1.2.3",
-			expected: []string{"1", "2", "3", maxValue},
+			expected: []string{"1", "2", "3"},
 		},
 		"Parses PreReleaseIdentifer": {
 			version:  "1.2.3-a.1",
-			expected: []string{"1", "2", "3", "97", "1"},
+			expected: []string{"1", "2", "3", "-1", "97", "0", "1", "-1"},
 		},
 		"Parses alpha as pre-release": {
 			version:  "1.2.3-alpha",
-			expected: []string{"1", "2", "3", "97.0000000108000000011200000001040000000097"},
+			expected: []string{"1", "2", "3", "-1", "97.108112104097", "-1"},
 		},
 		"Build Metadata Is Ignored": {
 			version:  "1.2.3+ignored",
-			expected: []string{"1", "2", "3", maxValue},
+			expected: []string{"1", "2", "3"},
 		},
 		"Parses When All Sections Present": {
 			version:  "1.2.3-a.1+ignored",
-			expected: []string{"1", "2", "3", "97", "1"},
+			expected: []string{"1", "2", "3", "-1", "97", "0", "1", "-1"},
 		},
 	}
 
@@ -149,25 +157,72 @@ func TestParseSemVer(t *testing.T) {
 	}
 }
 
-func TestParseSemVarOrdering(t *testing.T) {
-	alpha := parseOrFatalSemVer(t, "1.0.0-alpha")
-	alpha1 := parseOrFatalSemVer(t, "1.0.0-alpha.1")
-	alphaBeta := parseOrFatalSemVer(t, "1.0.0-alpha.beta")
-	beta := parseOrFatalSemVer(t, "1.0.0-beta")
-	beta2 := parseOrFatalSemVer(t, "1.0.0-beta.2")
-	beta11 := parseOrFatalSemVer(t, "1.0.0-beta.11")
-	rc := parseOrFatalSemVer(t, "1.0.0-rc.1")
-	stable := parseOrFatalSemVer(t, "1.0.0")
-	stableNext := parseOrFatalSemVer(t, "1.0.1")
+var testParseSemVerOrderInputs = []string{
+	"0.0.0-foo",
+	"0.0.0",
+	"0.0.1",
+	"0.1.2",
+	"0.9.0",
+	"0.9.9",
+	"0.10.0",
+	"0.99.0",
+	"1.0.0-alpha",
+	"1.0.0-alpha.0",
+	"1.0.0-alpha.1",
+	"1.0.0-alpha.100",
+	"1.0.0-alpha.100.0",
+	"1.0.0-alpha.100.a",
+	"1.0.0-alpha.beta",
+	"1.0.0-beta",
+	"1.0.0-beta.2",
+	"1.0.0-beta.11",
+	"1.0.0-rc.1",
+	"1.0.0",
+	"1.0.1",
+	"1.2.2",
+	"1.2.3-4",
+	"1.2.3-5",
+	"1.2.3-4-foo",
+	"1.2.3-5-Foo",
+	"1.2.3-5-foo",
+	"1.2.3-R2",
+	"1.2.3-a",
+	"1.2.3-a.0",
+	"1.2.3-a.5",
+	"1.2.3-a.10",
+	"1.2.3-a.100",
+	"1.2.3-a.b",
+	"1.2.3-a.b.c.5.d.100",
+	"1.2.3-a.b.c.10.d.5",
+	"1.2.3-alpha.0.2",
+	"1.2.3-alpha.0.pr.1",
+	"1.2.3-alpha.0.pr.2",
+	"1.2.3-asdf",
+	"1.2.3-pre",
+	"1.2.3-r100",
+	"1.2.3-r2",
+	"1.2.3",
+	"1.2.4-1",
+	"1.2.4",
+	"2.0.0",
+	"2.3.4",
+	"2.7.2+asdf",
+	"3.0.0",
+	"9.9.9-alpha.0.pr.1",
+}
 
-	assert.True(t, Compare(alpha, alpha1) < 0)
-	assert.True(t, Compare(alpha1, alphaBeta) < 0)
-	assert.True(t, Compare(alphaBeta, beta) < 0)
-	assert.True(t, Compare(beta, beta2) < 0)
-	assert.True(t, Compare(beta2, beta11) < 0)
-	assert.True(t, Compare(beta11, rc) < 0)
-	assert.True(t, Compare(rc, stable) < 0)
-	assert.True(t, Compare(stable, stableNext) < 0)
+func TestParseSemVerOrdering(t *testing.T) {
+	for i := 0; i < len(testParseSemVerOrderInputs)-1; i++ {
+		v1 := parseOrFatalSemVer(t, testParseSemVerOrderInputs[i])
+		v2 := parseOrFatalSemVer(t, testParseSemVerOrderInputs[i+1])
+		assert.True(
+			t,
+			Compare(v1, v2) < 0,
+			"%v should be less than %v",
+			testParseSemVerOrderInputs[i],
+			testParseSemVerOrderInputs[i+1],
+		)
+	}
 }
 
 func TestIsNumber(t *testing.T) {

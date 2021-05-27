@@ -6,14 +6,13 @@ package version
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"golang.org/x/text/unicode/norm"
 )
 
 const (
-	// Value greater than unicode's upper limit of 0x10FFFF = 1,114,111
-	maxValue            = "2000000"
 	delimiter           = "-"
 	delimitedSubsection = delimiter + "$1" + delimiter
 )
@@ -28,7 +27,7 @@ var (
 	notZero                   = regexp.MustCompile(`[^0]`)
 
 	// Matches semver 2.0
-	semVerRegEx = regexp.MustCompile(`^(?P<Major>\d+)\.(?P<Minor>\d+)\.(?P<Patch>\d+)(?P<PreReleaseIDs>-[0-9A-Za-z-.]+)?(?P<BuildMetadata>\+[0-9A-Za-z-.]+)?$`)
+	semVerRegEx = regexp.MustCompile(`^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`)
 
 	genericPreReleaseIdentifiers = map[string]string{
 		"alpha":   "-26",
@@ -89,17 +88,44 @@ func ParseSemVer(version string) (*Version, error) {
 		return nil, fmt.Errorf("Version does not match semver regex: %s", version)
 	}
 
-	major, minor, patch, preReleaseIDs := matches[1], matches[2], matches[3], matches[4]
+	major, minor, patch, preRelease := matches[1], matches[2], matches[3], matches[4]
 	segments := []string{major, minor, patch}
 
-	if preReleaseIDs == "" {
-		segments = append(segments, maxValue)
-	} else {
-		ids := parseBySeparator(preReleaseIDs, anyPunctuationOrSeparator, toDecimalString)
-		segments = append(segments, ids...)
+	if preRelease != "" {
+		// This is here to make a pre-release always less than a normal
+		// release. For example "1.2.4-1" < "1.2.4"
+		segments = append(segments, "-1")
+
+		preReleaseSegments := parseSemVerPreRelease(preRelease)
+		segments = append(segments, preReleaseSegments...)
+
+		// And this is here to satisfy the requirement that "A larger
+		// set of pre-release fields has a higher precedence than a
+		// smaller set". For example, "1.0.0-alpha" < "1.0.0-alpha.0"
+		segments = append(segments, "-1")
 	}
 
 	return fromStringSlice(SemVer, version, segments)
+}
+
+func parseSemVerPreRelease(preRelease string) []string {
+	results := []string{}
+	segments := strings.Split(preRelease, ".")
+	for _, segment := range segments {
+		_, err := strconv.Atoi(segment)
+		if err != nil {
+			results = append(results, asciiToDecimalString(segment))
+		} else {
+			// This ensures that, for pre-releases, "Numeric
+			// identifiers always have lower precedence than
+			// non-numeric identifiers." For example,
+			// "1.2.3-5" < "1.2.3-4-foo"
+			results = append(results, "0")
+
+			results = append(results, segment)
+		}
+	}
+	return results
 }
 
 func normalizeUnicode(s string) string {
@@ -222,4 +248,22 @@ func containsGenericPreReleaseIdentifierValue(numbers []string) bool {
 	}
 
 	return false
+}
+
+func asciiToDecimalString(s string) string {
+	decimal := ""
+	for i, r := range s {
+		if i == 0 {
+			decimal = fmt.Sprintf("%d", r)
+			continue
+		}
+
+		if i == 1 {
+			decimal += "."
+		}
+
+		// Pad to 3 digits because ASCII characters are at most 3 digits
+		decimal += fmt.Sprintf("%03d", r)
+	}
+	return decimal
 }

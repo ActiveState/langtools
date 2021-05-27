@@ -1,3 +1,8 @@
+## v0.0.8 2021-05-27
+
+* Fix several bugs in SemVer parsing.
+
+
 ## v0.0.7 2021-05-11
 
 * Add support for parsing PHP versions.
