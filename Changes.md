@@ -1,3 +1,8 @@
+## v0.0.9 2021-06-01
+
+* Ignore case when parsing PHP versions.
+
+
 ## v0.0.8 2021-05-27
 
 * Fix several bugs in SemVer parsing.
