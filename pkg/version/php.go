@@ -137,6 +137,9 @@ func normalizePHP(version string) (string, error) {
 	// Extra whitespace is tolerated
 	version = strings.TrimSpace(version)
 
+	// Case doesn't matter
+	version = strings.ToLower(version)
+
 	// Remove aliasing
 	matches := phpAliasRegex.FindStringSubmatch(version)
 	if len(matches) > 1 {

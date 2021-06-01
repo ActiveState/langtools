@@ -23,6 +23,7 @@ var normalizePHPTests = [][]string{
 	{"1.0-dev", "1.0.0.0-dev"},
 	{"1.0.0 ", "1.0.0.0"},
 	{"1.0.0", "1.0.0.0"},
+	{"1.0.0-BeTA", "1.0.0.0-beta"},
 	{"1.0.0+foo as 2.0", "1.0.0.0"},
 	{"1.0.0+foo", "1.0.0.0"},
 	{"1.0.0+foo@dev", "1.0.0.0"},
@@ -137,9 +138,9 @@ func TestInvalidPHPVersions(t *testing.T) {
 }
 
 var testParsePHPEqualInputs = [][]string{
-	{"0", "0.0", "0.0.0", "0000", "0.0.0.0-stable"},
+	{"0", "0.0", "0.0.0", "0000", "0.0.0.0-stable", "0.0.0.0-STABLE"},
 	{"000000", "0000000", "00000000"},
-	{"1a", "1alpha"},
+	{"1a", "1alpha", "1ALPHA"},
 	{"2.b", "2-beta", "2-b", "2.beta"},
 	{"3RC", "3.0.0.0-rc"},
 	{"4dev", "4.dev", "4-dev"},
@@ -208,7 +209,7 @@ var testParsePHPOrderInputs = []string{
 	"2010-01-02",
 	"2010.01.02.dev",
 	"2010.01.02.a",
-	"2010.01.02-stable",
+	"2010.01.02-STABLE",
 	"2010.01.02.p",
 	"2010.01.02.p0",
 	"2010.01.02.p1",
