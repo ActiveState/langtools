@@ -37,6 +37,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/ericlagergren/decimal"
 )
@@ -107,17 +108,65 @@ func (v *Version) MarshalJSON() ([]byte, error) {
 // string representation of a number. This returns an error if any element of
 // the slice cannot be converted to a *decimal.Big value.
 func fromStringSlice(pa ParsedAs, original string, strings []string) (*Version, error) {
+	if isOnlyInts(strings) {
+		ints, err := stringsToInts(strings)
+		if err == nil {
+			ints = trimTrailingZerosInts(ints)
+			return &Version{
+				Original: original,
+				Ints:     ints,
+				Decimal:  nil,
+				ParsedAs: pa,
+			}, nil
+		}
+	}
+
+	// fall back to this case if there aren't only ints
+	// or if string to int64 conversion failed at any point
+	return makeDecimalVersions(pa, original, strings)
+}
+
+func makeDecimalVersions(pa ParsedAs, original string, strings []string) (*Version, error) {
 	decimals, err := stringsToDecimals(strings)
 	if err != nil {
 		return nil, err
 	}
 
-	decimals = trimTrailingZeros(decimals)
+	decimals = trimTrailingZerosDecimals(decimals)
 	return &Version{
 		Original: original,
+		Ints:     nil,
 		Decimal:  decimals,
 		ParsedAs: pa,
 	}, nil
+}
+
+// 2^63 is 19 digits long, so play it safe
+func isOnlyInts(strings []string) bool {
+	for _, s := range strings {
+		if len(s) > 18 {
+			return false
+		}
+	}
+
+	return true
+}
+
+func stringsToInts(strings []string) ([]int64, error) {
+	if len(strings) == 0 {
+		return nil, errors.New("The provided string slice must have at least one element")
+	}
+
+	ints := make([]int64, len(strings))
+	for i, s := range strings {
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, errors.New("Failed to create int64 from " + s)
+		}
+		ints[i] = n
+	}
+
+	return ints, nil
 }
 
 func stringsToDecimals(strings []string) ([]*decimal.Big, error) {
@@ -137,7 +186,19 @@ func stringsToDecimals(strings []string) ([]*decimal.Big, error) {
 	return decimals, nil
 }
 
-func trimTrailingZeros(decimals []*decimal.Big) []*decimal.Big {
+func trimTrailingZerosInts(ints []int64) []int64 {
+	indexOfLastZero := len(ints)
+	for i := len(ints) - 1; i > 0; i-- {
+		if ints[i] != 0 {
+			break
+		}
+		indexOfLastZero = i
+	}
+
+	return ints[0:indexOfLastZero]
+}
+
+func trimTrailingZerosDecimals(decimals []*decimal.Big) []*decimal.Big {
 	indexOfLastZero := len(decimals)
 	for i := len(decimals) - 1; i > 0; i-- {
 		if decimals[i].Cmp(bigZero) != 0 {
@@ -159,7 +220,35 @@ var bigZero = decimal.New(0, 0)
 // Versions that differ only by trailing zeros (e.g. "1.2" and "1.2.0") are
 // equal.
 func Compare(v1, v2 *Version) int {
-	min, max, longest, flip := minMax(v1.Decimal, v2.Decimal)
+	if v1.Decimal != nil && v2.Decimal != nil {
+		return compareDecimals(v1, v2)
+	} else if v1.Decimal != nil && v2.Decimal == nil {
+		v2.Decimal = promoteDecimals(v2)
+		cmp := compareDecimals(v1, v2)
+		v2.Decimal = nil
+		return cmp
+	} else if v1.Decimal == nil && v2.Decimal != nil {
+		v1.Decimal = promoteDecimals(v1)
+		cmp := compareDecimals(v1, v2)
+		v1.Decimal = nil
+		return cmp
+	} else {
+		return compareInts(v1, v2)
+	}
+}
+
+func promoteDecimals(v *Version) []*decimal.Big {
+	decimals := make([]*decimal.Big, len(v.Ints))
+	for i, n := range v.Ints {
+		d := decimal.New(n, 0)
+		decimals[i] = d
+	}
+
+	return decimals
+}
+
+func compareDecimals(v1 *Version, v2 *Version) int {
+	min, max, longest, flip := minMaxDecimals(v1.Decimal, v2.Decimal)
 
 	// find any difference between these versions where they have the same number of segments
 	for i := 0; i < min; i++ {
@@ -180,8 +269,47 @@ func Compare(v1, v2 *Version) int {
 	return 0
 }
 
-// helper function to find the lengths of and longest version segment array
-func minMax(v1 []*decimal.Big, v2 []*decimal.Big) (int, int, []*decimal.Big, int) {
+func compareInts(v1 *Version, v2 *Version) int {
+	min, max, longest, flip := minMaxInts(v1.Ints, v2.Ints)
+
+	// find any difference between these versions where they have the same number of segments
+	for i := 0; i < min; i++ {
+		if v1.Ints[i] != v2.Ints[i] {
+			if v1.Ints[i] < v2.Ints[i] {
+				return -1
+			} else {
+				return 1
+			}
+		}
+	}
+
+	// compare remaining segments to zero
+	for i := min; i < max; i++ {
+		if longest[i] != 0 {
+			if longest[i] < 0 {
+				return -1 * flip
+			} else {
+				return flip
+			}
+		}
+	}
+
+	return 0
+}
+
+// helper function to find the lengths of and longest version segment array of Decimals
+func minMaxDecimals(v1 []*decimal.Big, v2 []*decimal.Big) (int, int, []*decimal.Big, int) {
+	l1 := len(v1)
+	l2 := len(v2)
+
+	if l1 < l2 {
+		return l1, l2, v2, -1
+	}
+	return l2, l1, v1, 1
+}
+
+// helper function to find the lengths of and longest version segment array of Ints
+func minMaxInts(v1 []int64, v2 []int64) (int, int, []int64, int) {
 	l1 := len(v1)
 	l2 := len(v2)
 
@@ -194,15 +322,25 @@ func minMax(v1 []*decimal.Big, v2 []*decimal.Big) (int, int, []*decimal.Big, int
 // Clone returns a new *Version that is a clone of the one passed as the
 // method receiver.
 func (v *Version) Clone() *Version {
-	d := make([]*decimal.Big, len(v.Decimal))
-	for i := range v.Decimal {
-		d[i] = decimal.New(0, 0)
-		d[i].Copy(v.Decimal[i])
-	}
-	return &Version{
-		Original: v.Original,
-		Decimal:  d,
-		ParsedAs: v.ParsedAs,
+	if v.Decimal != nil {
+		d := make([]*decimal.Big, len(v.Decimal))
+		for i := range v.Decimal {
+			d[i] = decimal.New(0, 0)
+			d[i].Copy(v.Decimal[i])
+		}
+		return &Version{
+			Original: v.Original,
+			Decimal:  d,
+			ParsedAs: v.ParsedAs,
+		}
+	} else {
+		i := make([]int64, len(v.Ints))
+		copy(i, v.Ints)
+		return &Version{
+			Original: v.Original,
+			Ints:     i,
+			ParsedAs: v.ParsedAs,
+		}
 	}
 }
 
