@@ -34,6 +34,7 @@ package version
 //go:generate enumer -type ParsedAs .
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -69,11 +70,36 @@ const (
 type Version struct {
 	// Original is the string that was passed to the parsing func.
 	Original string `json:"version"`
+	// The simplest form of data
+	Ints []int64
 	// Decimal contains a slice of `*decimal.Big` values. This will always
 	// contain at least one element.
 	Decimal []*decimal.Big `json:"sortable_version"`
 	// ParsedAs indicates which type the version was parsed as.
 	ParsedAs ParsedAs `json:"-"`
+}
+
+func (v *Version) MarshalJSON() ([]byte, error) {
+	if v.Decimal != nil {
+		return json.Marshal(&struct {
+			Original string         `json:"version"`
+			Decimal  []*decimal.Big `json:"sortable_version"`
+			ParsedAs ParsedAs       `json:"-"`
+		}{
+			Original: v.Original,
+			Decimal:  v.Decimal,
+			ParsedAs: v.ParsedAs,
+		})
+	}
+	return json.Marshal(&struct {
+		Original string   `json:"version"`
+		Ints     []int64  `json:"sortable_version"`
+		ParsedAs ParsedAs `json:"-"`
+	}{
+		Original: v.Original,
+		Ints:     v.Ints,
+		ParsedAs: v.ParsedAs,
+	})
 }
 
 // fromStringSlice take a version type and a slice of strings and returns a
