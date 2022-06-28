@@ -2,6 +2,7 @@ package version
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/ericlagergren/decimal"
@@ -54,8 +55,8 @@ func TestParseGeneric(t *testing.T) {
 			actual, err := ParseGeneric(tt.version)
 			require.NoError(t, err)
 			assert.Equal(t, Generic, actual.ParsedAs, "got expected ParsedAs value")
-			assertDecimalEqualString(t, tt.expected, actual.Decimal)
-			assertDecimalEqualDecimal(t, tt.expected, actual.Decimal)
+			assertStringEquality(t, tt.expected, actual)
+			assertNumericEquality(t, tt.expected, actual)
 		})
 	}
 }
@@ -150,8 +151,8 @@ func TestParseSemVer(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, SemVer, actual.ParsedAs, "got expected ParsedAs value")
-				assertDecimalEqualString(t, test.expected, actual.Decimal)
-				assertDecimalEqualDecimal(t, test.expected, actual.Decimal)
+				assertStringEquality(t, test.expected, actual)
+				assertNumericEquality(t, test.expected, actual)
 			}
 		})
 	}
@@ -237,11 +238,40 @@ func TestIsNumber(t *testing.T) {
 	assert.False(t, isNumber("1.2.3"))
 }
 
+func assertStringEquality(t *testing.T, expected []string, actual *Version) {
+	if actual.Decimal != nil {
+		assertDecimalEqualString(t, expected, actual.Decimal)
+	} else {
+		assertIntsEqualString(t, expected, actual.Ints)
+	}
+}
+
+func assertNumericEquality(t *testing.T, expected []string, actual *Version) {
+	if actual.Decimal != nil {
+		assertDecimalEqualDecimal(t, expected, actual.Decimal)
+	} else {
+		assertIntsEqualInts(t, expected, actual.Ints)
+	}
+}
+
+func assertIntsEqualString(t *testing.T, expected []string, actual []int64) {
+	require.Equal(t, len(expected), len(actual))
+	for i := range expected {
+		assert.Equal(t, expected[i], strconv.FormatInt(actual[i], 10))
+	}
+}
+
 func assertDecimalEqualString(t *testing.T, expected []string, actual []*decimal.Big) {
 	require.Equal(t, len(expected), len(actual))
 	for i := range expected {
 		assert.Equal(t, expected[i], actual[i].String())
 	}
+}
+
+func assertIntsEqualInts(t *testing.T, expected []string, actual []int64) {
+	expectedInts, err := stringsToInts(expected)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedInts, actual)
 }
 
 func assertDecimalEqualDecimal(t *testing.T, expected []string, actual []*decimal.Big) {
@@ -354,8 +384,8 @@ func TestClone(t *testing.T) {
 	assert.Equal(t, v1.Original, v2.Original, "cloned version has same Original string")
 	assert.Equal(t, v1.ParsedAs, v2.ParsedAs, "cloned version has same ParsedAs value")
 
-	v1.Decimal[0] = decimal.New(0, 0)
-	assert.NotEqual(t, 0, Compare(v1, v2), "changing Decimal slice in original does not change clone")
+	v1.Ints[0] = 0
+	assert.NotEqual(t, 0, Compare(v1, v2), "changing slice in original does not change clone")
 }
 
 func TestString(t *testing.T) {
@@ -385,7 +415,7 @@ func TestTrimTrailingZeros(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(fmt.Sprint(tt.input), func(t *testing.T) {
 			input := mustStringsToDecimal(t, tt.input)
-			actual := trimTrailingZeros(input)
+			actual := trimTrailingZerosDecimals(input)
 			expected := mustStringsToDecimal(t, tt.expected)
 			assert.Equal(t, expected, actual, "expected %v got %v", expected, actual)
 		})
