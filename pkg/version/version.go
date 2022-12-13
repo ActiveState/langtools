@@ -126,9 +126,10 @@ func trimTrailingZeros(decimals []*decimal.Big) []*decimal.Big {
 var bigZero = decimal.New(0, 0)
 
 // Compare returns:
-//   <0 if the version in v1 is less than the version in v2
-//    0 if the version in v1 is equal to the version in v2
-//   >0 if the version in v1 is greater than the version in v2
+//
+//	<0 if the version in v1 is less than the version in v2
+//	 0 if the version in v1 is equal to the version in v2
+//	>0 if the version in v1 is greater than the version in v2
 //
 // Versions that differ only by trailing zeros (e.g. "1.2" and "1.2.0") are
 // equal.
