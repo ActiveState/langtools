@@ -63,6 +63,8 @@ const (
 	PythonPEP440
 	// Ruby is for Ruby versions.
 	Ruby
+    // Go is for Go versions.
+    Go
 )
 
 // Version is the struct returned from all parsing funcs.
