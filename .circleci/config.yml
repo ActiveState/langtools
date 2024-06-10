@@ -8,19 +8,19 @@ shared: &shared
         command: go test -race -v ./...
 
 jobs:
-  "go-1.13":
+  "go-1.21":
     docker:
-      - image: circleci/golang:1.13
+      - image: cimg/go:1.21
     <<: *shared
 
-  "go-1.14":
+  "go-1.22":
     docker:
-      - image: circleci/golang:1.14
+      - image: cimg/go:1.22
     <<: *shared
 
   validate:
     docker:
-      - image: circleci/golang:1.14
+      - image: cimg/go:1.22
     steps:
       - checkout
       - run:
@@ -41,6 +41,6 @@ workflows:
   version: 2
   build:
     jobs:
-      - "go-1.13"
-      - "go-1.14"
+      - "go-1.21"
+      - "go-1.22"
       - validate
