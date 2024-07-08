@@ -90,7 +90,7 @@ This library was created by:
 
 ## Copyright
 
-Copyright (c) 2020, ActiveState Software.
+Copyright (c) 2020-2024, ActiveState Software.
 All rights reserved.
 
 ## License
