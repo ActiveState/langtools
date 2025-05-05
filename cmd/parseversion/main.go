@@ -38,6 +38,8 @@ func main() {
 		switch typ {
 		case "generic":
 			parsed, err = version.ParseGeneric(ver)
+		case "go":
+			parsed, err = version.ParseGo(ver)
 		case "semver":
 			parsed, err = version.ParseSemVer(ver)
 		case "perl":
@@ -89,6 +91,9 @@ The following version types are available:
   * semver - A version following the semver specification (https://semver.org/)
   * python - A Python PEP440 or legacy version
   * perl - A Perl module version
+  * php - A PHP module version
+  * ruby - A Ruby module version
+  * go - A Golang module version
   * generic - Anything not covered by another type, such as C libraries, etc.
 `
 
