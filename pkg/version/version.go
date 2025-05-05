@@ -135,6 +135,11 @@ var bigZero = decimal.New(0, 0)
 // Versions that differ only by trailing zeros (e.g. "1.2" and "1.2.0") are
 // equal.
 func Compare(v1, v2 *Version) int {
+    // if they're the same pointer, the versions are equal
+    if v1 == v2 {
+        return 0
+    }
+
 	min, max, longest, flip := minMax(v1.Decimal, v2.Decimal)
 
 	// find any difference between these versions where they have the same number of segments
