@@ -123,8 +123,8 @@ func TestParsePerl(t *testing.T) {
 				} else {
 					require.NoError(t, err)
 					assert.Equal(t, pa, actual.ParsedAs, "got expected ParsedAs value")
-					assertDecimalEqualString(t, tt.expected, actual.Decimal)
-					assertDecimalEqualDecimal(t, tt.expected, actual.Decimal)
+					assertStringEquality(t, tt.expected, actual)
+					assertNumericEquality(t, tt.expected, actual)
 				}
 			})
 		}
